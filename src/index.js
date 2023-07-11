@@ -7,6 +7,8 @@ const port = 8800
 const cors = require('cors')
 app.use(cors())
 
+const bodyparser = require('body-parser');
+app.use(bodyparser.json());
 
 //Database
 const routes = require('./routes/index')

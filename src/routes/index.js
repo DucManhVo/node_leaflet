@@ -1,9 +1,10 @@
 const db = require('../database/index')
 
 
+
 function routes(app) {
     app.get('/', (req, res) => {
-        const q = "select device_id, device_latitude, device_longitude, ci_address, ci_description, cus_name from (customer_iot inner join area on customer_iot.area_code = area.area_code) inner join customers on customer_iot.cus_id = customers.cus_id"
+        const q = "SELECT ci_id, device_id, device_latitude, device_longitude, ci_address, ci_description, cus_name FROM (customer_iot INNER JOIN area ON customer_iot.area_code = area.area_code) INNER JOIN customers ON customer_iot.cus_id = customers.cus_id"
 
         db.dbConnect.query(q, (err, data) => {
             if (err) return res.json(err)
@@ -14,7 +15,7 @@ function routes(app) {
     })
 
     app.get('/customer', (req, res) => {
-        const q = "select distinct customer_iot.cus_id, cus_name from (customer_iot inner join area on customer_iot.area_code = area.area_code) inner join customers on customer_iot.cus_id = customers.cus_id"
+        const q = "SELECT DISTINCT customer_iot.cus_id, cus_name FROM (customer_iot INNER JOIN area ON customer_iot.area_code = area.area_code) INNER JOIN customers ON customer_iot.cus_id = customers.cus_id"
 
         db.dbConnect.query(q, (err, data) => {
             if (err) return res.json(err)
@@ -93,6 +94,52 @@ function routes(app) {
         })
     })
 
+    app.post('/create', (req, res) => {
+        const q = "INSERT INTO customer_iot ( `ci_id`, `device_id`, `device_latitude`, `device_longitude`, `ci_address`, `ci_description`, `cus_id`, `area_code`) VALUES (?)";
+        const values = [
+            req.body.ci_id,
+            req.body.device_id,
+            req.body.device_latitude,
+            req.body.device_longitude,
+            req.body.ci_address,
+            req.body.ci_description,
+            req.body.cus_id,
+            req.body.area_code
+        ];
+        db.dbConnect.query(q, [values], (err, data) => {
+            if (err) return res.send(err);
+            return res.json(data);
+        });
+    })
+
+    app.delete("/delete/:ci_id", (req, res) => {
+        const deviceId = req.params.ci_id;
+        const q = " DELETE FROM customer_iot WHERE ci_id = ? ";
+
+        db.dbConnect.query(q, [deviceId], (err, data) => {
+            if (err) return res.send(err);
+            return res.json(data);
+        });
+    });
+
+    app.put("/update/:ci_id", (req, res) => {
+        const deviceId = req.params.ci_id;
+        const q = "UPDATE customer_iot SET `ci_id`= ?, `device_id`= ?, `device_latitude`= ?, `device_longitude`= ?, `ci_address`= ?, `ci_description`= ?, `cus_id`= ?, `area_code`= ? WHERE ci_id = ?";
+        const values = [
+            req.body.ci_id,
+            req.body.device_id,
+            req.body.device_latitude,
+            req.body.device_longitude,
+            req.body.ci_address,
+            req.body.ci_description,
+            req.body.cus_id,
+            req.body.area_code
+        ];
+        db.dbConnect.query(q, [...values, deviceId], (err, data) => {
+            if (err) return res.send(err);
+            return res.json(data);
+        });
+    });
 }
 
 
